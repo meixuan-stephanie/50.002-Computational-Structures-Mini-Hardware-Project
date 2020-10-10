@@ -1,0 +1,52 @@
+module au_top (
+    input clk,              // 100MHz clock
+    input rst_n,            // reset button (active low)
+    output led [8],         // 8 user controllable LEDs
+    input usb_rx,           // USB->Serial input
+    output usb_tx,          // USB->Serial output
+    output io_led [3][8],   // LEDs on IO Shield
+    output io_seg [8],      // 7-segment LEDs on IO Shield
+    output io_sel [4],      // Digit select on IO Shield
+    input io_button [5],        // 5 buttons on IO Shield
+    input io_dip [3][8],     // DIP switches on IO Shield
+    input customin[2],// this takes the value for s and cout from the full adder device
+    output customout[3]// this provides output to the full adder device with a,b,cin 
+  ) {
+
+  
+  sig rst;                  // reset signal  
+  counter slowclock(#SIZE(1),#DIV(26), .clk(clk), .rst(rst));    
+  sequence_checker sc(.clk(slowclock.value), .rst(io_button[0]));
+  .clk(clk) {
+    // The reset conditioner is used to synchronize the reset signal to the FPGA
+    // clock. This ensures the entire FPGA comes out of reset at the same time.
+    reset_conditioner reset_cond;
+  }
+  
+  always {
+    reset_cond.in = ~rst_n; // input raw inverted reset signal
+    rst = reset_cond.out;   // conditioned reset
+    
+    usb_tx = usb_rx;        // loop serial port
+    
+    led = 8h00;             // turn LEDs off
+    
+    io_led = 3x{{8h00}};    // turn LEDs off
+    io_seg = 8hff;          // turn segments off
+    io_sel = 4hf;           // select no digits
+    io_sel = 4hf; // select no digits
+    customout=b000;
+    
+        
+    if (io_dip[0][0]==1){// check if the fpga state is for manual input or automatic input 
+    io_led[2][0] = sc.s;// displays teh value of expected value of s according to the inputs a,b,customin
+    io_led[2][1] = sc.cout;//displays teh value of expected value of cout according to the inputs a,b,customin
+    io_led[1][2:0] = sc.a;//displays the value of a,b,cin
+    customout=sc.a;//sends the value of a,b,cin to the full adder device
+    if(customin[0]==sc.s & customin[1]==sc.cout){//checks if the input given by the fulladder device (i.e s and cout) matches the expected values
+        io_led[2][3]=b1;//if the conditions are ture , then the led lights up
+      }
+    }                   
+  }
+    
+}
