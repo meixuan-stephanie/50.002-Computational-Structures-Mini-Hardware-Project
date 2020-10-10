@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="full adder" board="Alchitry Au" language="Lucid" version="3">
+  <files>
+    <component>counter.luc</component>
+    <component>reset_conditioner.luc</component>
+    <component>edge_detector.luc</component>
+    <src>full_adder.luc</src>
+    <src top="true">au_top.luc</src>
+    <src>sequence_checker.luc</src>
+    <constraint>alc_br.xdc</constraint>
+    <constraint>custom.acf</constraint>
+  </files>
+</project>
